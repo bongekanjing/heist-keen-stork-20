@@ -1011,7 +1011,7 @@ export function createRenderer(canvas) {
 
     const word = alarm.mode === 'caught' ? 'CAUGHT' : alarm.mode === 'grace' ? 'BREAK SIGHT' : value > 60 ? 'SPOTTED' : value > 6 ? 'WATCHED' : 'QUIET';
     const color = alarm.mode === 'grace' || alarm.mode === 'caught' ? PALETTE.alarmRed : value > 6 ? PALETTE.amberBright : PALETTE.muted;
-    spaced('ALARM', x, y - 14, 14, color, 'left', 3.6, MONO, '700');
+    spaced('ALARM', x, y - 15, 12, color, 'left', 3.2, MONO, '700');
     text(`${Math.round(value)}%`, x + width, y - 14, 14, color, 'right', MONO, '700');
 
     if (danger) {
