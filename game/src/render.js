@@ -77,6 +77,33 @@ export function createRenderer(canvas) {
     context.letterSpacing = '0px';
   }
 
+
+  /**
+   * Draw a two-word name as two centred runs with a real gap between them. Letter-spacing
+   * collapses a single space to roughly one letter gap, so measure both words and offset
+   * them around the centre instead of relying on the space glyph.
+   */
+  function drawWordPair(name, cx, y, size, color) {
+    const words = name.split(' ');
+    if (words.length !== 2) {
+      spaced(name, cx, y, size, color, 'center', 2.4, MONO);
+      return;
+    }
+    const gap = 11;
+    context.font = font(size, MONO, '600');
+    context.letterSpacing = '2.4px';
+    const widths = words.map((word) => context.measureText(word).width);
+    const total = widths[0] + gap + widths[1];
+    let x = cx - total / 2;
+    context.fillStyle = color;
+    context.textAlign = 'left';
+    for (let index = 0; index < words.length; index += 1) {
+      context.fillText(words[index], x, y);
+      x += widths[index] + gap;
+    }
+    context.letterSpacing = '0px';
+  }
+
   // ---------------------------------------------------------------- floor and building shell
 
   function drawFloor(level, time) {
@@ -670,7 +697,11 @@ export function createRenderer(canvas) {
     context.stroke();
     context.restore();
 
-    spaced(loot.name.toUpperCase(), cx, loot.y + loot.h + 18, 12, PALETTE.gold, 'center', 2.4, MONO);
+    // A plain space inside 2.4px letter-spacing measured only 1px wider than the gap between
+    // two letters, so "HALCYON DIAMOND" read as one run-on word; the mono face also has no
+    // en space, so widening the character did nothing. Draw the two words as separate
+    // centred runs and place them by measured width, which guarantees the break.
+    drawWordPair(loot.name.toUpperCase(), cx, loot.y + loot.h + 18, 12, PALETTE.gold);
     spaced(loot.value, cx, loot.y + loot.h + 34, 11, 'rgba(255,210,74,0.62)', 'center', 1.8, MONO);
 
     if (loot.hold > 0.02) {
@@ -1176,9 +1207,13 @@ export function createRenderer(canvas) {
     context.fillStyle = 'rgba(3,7,13,0.55)';
     context.fillRect(0, 0, 1280, 720);
     const x = 214;
-    const y = 168;
+    const y = 150;
     const width = 852;
-    const height = 392;
+    // 392 was four pixels short of the eight-line control block, so the "PRESS SPACE TO
+    // BEGIN" prompt landed on the same baseline as the closing stakes line and struck
+    // through it. Sized from the content: 166 to the first line, eight lines at 26, then a
+    // clear gap to the prompt sitting 44 above the bottom edge.
+    const height = 436;
     context.fillStyle = 'rgba(9,16,28,0.95)';
     roundRect(context, x, y, width, height, 12);
     context.fill();
